@@ -85,6 +85,17 @@
             color: var(--ios-text-secondary);
         }
 
+        /* 提示条 */
+        .safari-tip {
+            background: rgba(255, 204, 0, 0.2);
+            color: #FF9500;
+            padding: 10px 16px;
+            margin: 0 16px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+        }
+
         /* 标题 */
         .header {
             padding: 0 20px 10px 20px;
@@ -266,6 +277,11 @@
     <div class="launch-text">加载中...</div>
 </div>
 
+<!-- Safari 提示条 -->
+<div class="safari-tip">
+    ⚠️ 为确保拉起成功，请使用 Safari 浏览器打开此页面，并在首次弹窗时选择「允许」。
+</div>
+
 <div class="header">
     <h1>凉茶IOS</h1>
     <p>全系统内透集成版</p>
@@ -375,7 +391,7 @@
 
     let pingInterval;
 
-    // 拉起和平精英
+    // 纯前端多 Scheme 拉起逻辑
     function startIntercept() {
         const btn = document.getElementById('interceptBtn');
         const pd = document.getElementById('pingDisplay');
@@ -406,13 +422,31 @@
                 btn.classList.remove('loading');
                 btn.innerText = "加载拦截";
 
-                // 和平精英 URL Scheme
-                window.location.href = "pgm://";
+                // 多 Scheme 轮询尝试
+                const schemes = [
+                    "pgm://",
+                    "pagm://",
+                    "mqqgame://",
+                    "tencent://game/?gameId=1000000001"
+                ];
 
-                // 未安装则跳转官网
+                let i = 0;
+                function tryOpen() {
+                    if (i >= schemes.length) {
+                        // 所有 Scheme 都失败，引导用户手动打开
+                        showAlert('拉起失败', '请手动打开和平精英，或尝试在 Safari 中重新打开此页面。');
+                        return;
+                    }
+                    window.location.href = schemes[i];
+                    i++;
+                    setTimeout(tryOpen, 300);
+                }
+                tryOpen();
+
+                // 兜底：如果都没反应，跳转到官网
                 setTimeout(() => {
                     window.location.href = "https://gp.qq.com/";
-                }, 1800);
+                }, 3000);
 
             }, 1600);
 
